@@ -21,7 +21,7 @@ def model_response(model, limit, state: MessagesState):
         summary_prompt = (
             "Distill the above chat messages into a single summary message. "
             "Include as many specific details as you can."
-        )
+        ) 
         summary_message = model.invoke(
             message_history + [HumanMessage(content=summary_prompt)]
         )

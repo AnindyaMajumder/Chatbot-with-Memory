@@ -4,7 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import AIMessage, HumanMessage
 # from langchain_core.chains import LLMChain
 from langchain_core.output_parsers import StrOutputParser
-from model import model_response
+from src.model import model_response
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
 
@@ -17,7 +17,7 @@ demo_ephemeral_chat_history = [
 ]
 # __________________________________________________________
 
-history_limit = 5
+history_limit = 100 # Ideal for 8B params 
 workflow = StateGraph(state_schema=MessagesState)
 model = OllamaLLM(model="llama3.1:8b")
 
