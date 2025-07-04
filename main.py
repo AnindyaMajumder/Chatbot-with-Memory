@@ -33,10 +33,6 @@ try:
 
 except ImportError as e:
     print(f"❌ Import error: {e}")
-    print("\n🔧 Setup required:")
-    print("   1. Install dependencies: pip install -r requirements.txt")
-    print("   2. Ensure Ollama is running: ollama serve")
-    print("   3. Pull model: ollama pull llama3.1:8b")
     
 except Exception as e:
     print(f"❌ Error: {e}")

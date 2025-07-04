@@ -14,7 +14,7 @@ from src.input_handler import load_conversation
 input_json_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'input.json')
 input_messages = load_conversation(input_json_path)
 
-history_limit = 100 # Ideal for 8B params 
+history_limit = 40 # Ideal for 8B params 
 workflow = StateGraph(state_schema=MessagesState)
 model = OllamaLLM(model="llama3.1:8b", 
                   temperature=0.5, 
@@ -53,3 +53,22 @@ for i, message in enumerate(result["messages"]):
 
 with open(output_path, 'w', encoding='utf-8') as f:
     json.dump(output_data, f, ensure_ascii=False, indent=4)
+
+# Save summary if present
+summary_info = result.get("summary_info")
+if summary_info:
+    from datetime import datetime
+    summaries_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'summarizer.json')
+    summary_data = {
+        "summary_index": summary_info["summary_index"],
+        "timestamp": datetime.now().isoformat(),
+        "summary": summary_info["summary"]
+    }
+    if os.path.exists(summaries_path):
+        with open(summaries_path, 'r', encoding='utf-8') as f:
+            all_summaries = json.load(f)
+    else:
+        all_summaries = []
+    all_summaries.append(summary_data)
+    with open(summaries_path, 'w', encoding='utf-8') as f:
+        json.dump(all_summaries, f, ensure_ascii=False, indent=4)
