@@ -19,7 +19,7 @@ try:
     # Execute the complete implementation from src
     import importlib.util
     
-    print("🔄 Running chatbot with current project structure...")
+    print("🔄 Running chatbot ...")
     print("=" * 50)
     
     # Load and execute the src/__init__.py which contains the full implementation
@@ -30,14 +30,6 @@ try:
     init_spec.loader.exec_module(src_module)
     
     print("\n🎉 Chatbot working successfully!")
-    print("\n📖 Available features:")
-    print("   - Memory-enabled conversations") 
-    print("   - Message history summarization")
-    print("   - Multiple conversation threads")
-    print("   - Sports-focused assistant personality")
-    print("\n📝 Try these commands:")
-    print("   python scripts/demo.py")
-    print("   python main.py")
 
 except ImportError as e:
     print(f"❌ Import error: {e}")

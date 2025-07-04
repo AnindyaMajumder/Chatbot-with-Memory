@@ -7,7 +7,7 @@ from langgraph.graph import START, MessagesState, StateGraph
 
 def model_response(model, limit, state: MessagesState):
     system_prompt = (
-        "You are a helpful assistant who is a sports nerd. "
+        "You are a helpful assistant who is a sports trainer. "
         "You will be given a series of messages, and you should respond to the last message."
         "The provided chat history includes a summary of the earlier conversation."
     )
