@@ -1,5 +1,8 @@
 [
     {
+        "summary" : [""]
+    },
+    {
         "role": "human",
         "content": "Hello! How are you today?"
     },

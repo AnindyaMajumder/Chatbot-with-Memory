@@ -1,74 +1,38 @@
-import json
 import os
-from langchain_ollama import OllamaLLM
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import AIMessage, HumanMessage
-# from langchain_core.chains import LLMChain
-from langchain_core.output_parsers import StrOutputParser
-from src.model import model_response
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import START, MessagesState, StateGraph
 from src.input_handler import load_conversation
+from src.workflow_setup import create_workflow_app, create_model
+from src.model import summarize_messages
+from src.output_handler import save_output_json
+from tests.test_var import load_input_json
 
-# Use the input handler to load messages
-input_json_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'input.json')
-input_messages = load_conversation(input_json_path)
+history_limit = 20 # Ideal for 8B params 
 
-history_limit = 40 # Ideal for 8B params 
-workflow = StateGraph(state_schema=MessagesState)
-model = OllamaLLM(model="llama3.1:8b", 
-                  temperature=0.5, 
-                  max_tokens=512, 
-                  top_p=0.9, 
-                  top_k=40,
-                  stop=["<|endoftext|>"]
-                )
+# Use the input handler to load messages 
+input_messages, summary_chunks, total_messages, previous_summaries = load_conversation(history_limit)
 
-def model_node(state):
-    return model_response(model, history_limit, state)
+# Summarize the summary_chunks using the model
+model = create_model()
+summaries = summarize_messages(model, summary_chunks)
 
-workflow.add_node("model", model_node)
-workflow.add_edge(START, "model")
+# Build the new message history: [all previous summaries] + [new summaries] + [unsummarized texts]
+message_history = []
+for summary in previous_summaries:
+    message_history.append(summary)
+for summary in summaries:
+    message_history.append(summary)
+message_history += input_messages[-total_messages:]
 
-memory = MemorySaver()
-app = workflow.compile(checkpointer=memory)
+# Create the workflow app
+app = create_workflow_app()
 result = app.invoke(
     {
-        "messages": input_messages,
+        "messages": message_history,
     },
     config={"configurable": {"thread_id": "4"}}
 )
 
 # Save output to output.json
-output_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'output.json')
-output_data = []
-for i, message in enumerate(result["messages"]):
-    if i == len(result["messages"]) - 1 or isinstance(message, AIMessage):
-        role = "ai"
-    elif isinstance(message, HumanMessage):
-        role = "human"
-    else:
-        role = type(message).__name__
-    output_data.append({"role": role, "content": message.content})
-
-with open(output_path, 'w', encoding='utf-8') as f:
-    json.dump(output_data, f, ensure_ascii=False, indent=4)
-
-# Save summary if present
-summary_info = result.get("summary_info")
-if summary_info:
-    from datetime import datetime
-    summaries_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'summarizer.json')
-    summary_data = {
-        "summary_index": summary_info["summary_index"],
-        "timestamp": datetime.now().isoformat(),
-        "summary": summary_info["summary"]
-    }
-    if os.path.exists(summaries_path):
-        with open(summaries_path, 'r', encoding='utf-8') as f:
-            all_summaries = json.load(f)
-    else:
-        all_summaries = []
-    all_summaries.append(summary_data)
-    with open(summaries_path, 'w', encoding='utf-8') as f:
-        json.dump(all_summaries, f, ensure_ascii=False, indent=4)
+original_conversation = load_input_json()
+output_json_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'output.json')
+save_output_json(None, result, summaries, output_json_path, previous_summaries, original_conversation)
