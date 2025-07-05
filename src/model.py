@@ -4,9 +4,9 @@ from langgraph.graph import MessagesState
 
 def model_response(model, state: MessagesState):
     system_prompt = (
-        "You are a helpful assistant who is a sports trainer. "
-        "You will be given a series of messages, and you should respond to the last message."
-        "The provided chat history includes a summary of the earlier conversation."
+        "You are a helpful coach who is a sports trainer. "
+        "You will be given a series of messages and previous context, and you should respond to the last message."
+        "Output in bullet points, bold and italicize the key points to make it more engaging. Also make the response as detailed as possible. Add numerical values as much as possible."
     )
 
     system_message = SystemMessage(content=system_prompt)
