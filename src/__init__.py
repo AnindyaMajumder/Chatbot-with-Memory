@@ -6,7 +6,7 @@ from src.model import summarize_messages
 from src.output_handler import save_output_json
 from tests.test_var import load_input_json
 
-history_limit = 20 # Ideal for 8B params 
+history_limit = 80 # Ideal for 8B params 
 
 # Use the input handler to load messages 
 input_messages, summary_chunks, total_messages, previous_summaries = load_conversation(history_limit)
